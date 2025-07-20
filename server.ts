@@ -1,3 +1,4 @@
+import config from "config";
 import logger from "./src/config/logger";
 import { createMessageBroker } from "./src/factories/broker-factory";
 import { MessageBroker } from "./src/types/broker";
@@ -7,8 +8,11 @@ const startServer = async () => {
   try {
     broker = createMessageBroker();
     await broker.connectConsumer();
-    await broker.consumeMessage(["<topic to consume>"], false);
+    await broker.consumeMessage(config.get("kafka.topics"), false);
   } catch (err) {
+    if (broker) {
+      await broker.disconnectConsumer();
+    }
     logger.error("Error happened: ", err.message);
     process.exit(1);
   }
